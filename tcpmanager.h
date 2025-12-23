@@ -16,7 +16,7 @@ public:
 
 
 signals:
-    void spinBoxSignal(const dataStruct &dataSt);
+    void tcpSignal(const dataStruct &dataSt);
 
 public slots:
     void listenToServer(const QString &ip, quint16 port);

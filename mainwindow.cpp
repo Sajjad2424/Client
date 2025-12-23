@@ -22,6 +22,7 @@
 #include "QPushButton"
 #include "QGroupBox"
 #include "QButtonGroup"
+#include <QRegularExpressionValidator>
 
 
 
@@ -32,9 +33,19 @@ MainWindow::MainWindow(QWidget *parent)
     QGridLayout *mainGridLayout = new QGridLayout();
     QWidget *mainWidget = new QWidget();
 
-    ipLineEdit = new QLineEdit("127.0.0.1",this);
-    portLineEdit = new QLineEdit("8080",this);
+    QIntValidator *portValidator = new QIntValidator();
+    portValidator->setRange(1,65535);
 
+    // QString ipRange = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])";
+    // QRegularExpression ipRegex("^" + ipRange+ "(\\." + ipRange + "){3}$");
+    // QRegularExpressionValidator *ipValidator = new QRegularExpressionValidator(ipRegex, this);
+
+    ipLineEdit = new QLineEdit("127.0.0.1",this);
+    //ipLineEdit->setValidator(ipValidator);
+    ipLineEdit->setInputMask("000.000.000.000");
+
+    portLineEdit = new QLineEdit("8080",this);
+    portLineEdit->setValidator(portValidator);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     QPushButton *openPushButon = new QPushButton("Open");
@@ -42,15 +53,20 @@ MainWindow::MainWindow(QWidget *parent)
     buttonLayout->addWidget(openPushButon);
     buttonLayout->addWidget(listonPishbuton);
 
-    QVBoxLayout *checkboxeslayout = new QVBoxLayout();
+
     QButtonGroup *buttonGroup = new QButtonGroup;
     serialChekBox =new QCheckBox("Serial");
     tcpCheckBox = new QCheckBox("Tcp");
     buttonGroup->addButton(serialChekBox);
     buttonGroup->addButton(tcpCheckBox);
     buttonGroup->setExclusive(true);
+
+
+    QGroupBox *checkBoxGroupBox = new QGroupBox("Connection");
+    QVBoxLayout *checkboxeslayout = new QVBoxLayout();
     checkboxeslayout->addWidget(tcpCheckBox);
     checkboxeslayout->addWidget(serialChekBox);
+    checkBoxGroupBox->setLayout(checkboxeslayout);
 
     ipportWidget = new QWidget();
     QGridLayout *ipportLayout = new QGridLayout();
@@ -68,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel *buadRateLabel = new QLabel("BuadRate");
     serialComboBox = new QComboBox(this);
     baudRateComboBox = new QComboBox();
-    baudRateComboBox->addItems({"9600" ,"19200","38400","57600","115200"});
+    //baudRateComboBox->addItems({"9600" ,"19200","38400","57600","115200"});
     serialWidget->setLayout(serialLayout);
 
     serialLayout->addWidget(PortNameLabel);
@@ -76,7 +92,7 @@ MainWindow::MainWindow(QWidget *parent)
     serialLayout->addWidget(serialComboBox,1,0);
     serialLayout->addWidget(baudRateComboBox,1,1);
 
-    QGroupBox *connectionGroupBox = new QGroupBox();
+    QGroupBox *connectionGroupBox = new QGroupBox("Config");
     QVBoxLayout *groupLayout = new QVBoxLayout();
     groupLayout->addWidget(ipportWidget);
     groupLayout->addWidget(serialWidget);
@@ -114,15 +130,15 @@ MainWindow::MainWindow(QWidget *parent)
     hBoxLayout->addWidget(mySpinBox5);
 
     myProgress = new QProgressBar(this);
-    myProgress->setValue(0);
+    //myProgress->setValue(0);
 
-    QGroupBox *informationGroupBox = new  QGroupBox();
+    QGroupBox *informationGroupBox = new  QGroupBox("Status");
     QVBoxLayout *informationLayout = new QVBoxLayout();
     informationLayout->addWidget(spinBoxesWidget);
     informationLayout->addWidget(myProgress);
     informationGroupBox->setLayout(informationLayout);
 
-    mainGridLayout->addItem(checkboxeslayout,1,0);
+    mainGridLayout->addWidget(checkBoxGroupBox,1,0);
     mainGridLayout->addItem(buttonLayout,0,0);
     mainGridLayout->addWidget(connectionGroupBox,2,0);
     mainGridLayout->addWidget(informationGroupBox,3,0);
@@ -132,15 +148,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     mainWidget->setLayout(mainGridLayout);
     setCentralWidget(mainWidget);
-    setFixedSize(500, 400);
+    setFixedSize(500, 480);
 
     dataManagerClass =new fileDataManager();
     tcpClass = new tcpmanager(this);
     serialClass = new serialmanager(this);
 
     connect(dataManagerClass, &fileDataManager::lineReaded, this, &MainWindow::updateSpinBox);
-    connect(tcpClass,&tcpmanager::spinBoxSignal,this,&MainWindow::updateSpinBoxTcp);
-
+    connect(tcpClass,&tcpmanager::tcpSignal,this,&MainWindow::updateSpinBoxTcp);
+    connect(serialClass,&serialmanager::serialSignal,this,&MainWindow::updateSpinBoxSerial);
 
     connect(openPushButon, &QPushButton::clicked , this ,&MainWindow::openFile);
     connect(listonPishbuton , &QPushButton::clicked, this, &MainWindow::chooseConnection);
@@ -148,6 +164,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(serialChekBox, &QCheckBox::toggled,this , &MainWindow::checboxes);
 
     loadProts();
+    loadBaudRate();
 }
 
 void MainWindow::openFile()
@@ -174,6 +191,8 @@ void MainWindow::updateSpinBoxTcp(const dataStruct &data)
     mySpinBox3->setValue(data.h3);
     mySpinBox4->setValue(data.h4);
     mySpinBox5->setValue(data.h5);
+    myProgress->setValue(data.progressBar);
+
 
 }
 
@@ -192,7 +211,7 @@ void MainWindow::listenToServer()
     QString ip = ipLineEdit->text();
     quint16 port = portLineEdit->text().toUShort();
     tcpClass->listenToServer(ip,port);
- }
+}
 
 
 
@@ -212,11 +231,26 @@ MainWindow::~MainWindow()
     }
 }
 
+void MainWindow::loadBaudRate()
+{
+
+    const QList<qint32> baudRates = QSerialPortInfo::standardBaudRates();
+
+
+    foreach (qint32 baud, baudRates)
+    {
+        //qDebug() << baud;
+
+        baudRateComboBox->addItem(QString::number(baud));
+    }
+}
+
 
 void MainWindow::loadProts()
 {
     foreach (auto port, QSerialPortInfo::availablePorts()) {
         qDebug()<< port.portName();
+        qDebug()<< port.serialNumber();
         serialComboBox->addItem(port.portName());
     }
 }
@@ -261,20 +295,16 @@ void MainWindow::checboxes()
     }
     else
     {
-
         serialWidget->setEnabled(true);
     }
     if(serialChekBox->isChecked())
     {
         ipportWidget->setEnabled(false);
-
     }
     else
     {
         ipportWidget->setEnabled(true);
-
     }
-
 }
 
 

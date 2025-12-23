@@ -16,7 +16,7 @@ public:
     void readSerialData();
 
 signals:
-    void *updateSpinBoxes(QStringList &list);
+    void *serialSignal(QStringList &list);
 
 private:
     QWidget *_parent;

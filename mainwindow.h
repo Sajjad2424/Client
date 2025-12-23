@@ -33,19 +33,19 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void loadBaudRate();
+
 private slots:
     void openFile();
-    // void startReading(QString &filePath);
-    //  void readNextLine();
+
     void updateSpinBox(QVector<int> values,int progress);
     void updateSpinBoxTcp(const dataStruct &data);
     void updateSpinBoxSerial(QStringList &data);
-    // void readClientData();
-    // void clientConnection();
+
     void listenToServer();
     void loadProts();
     void openPort();
-    // void readSerialData();
+
     void chooseConnection();
     void checboxes();
 

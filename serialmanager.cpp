@@ -37,7 +37,9 @@ void serialmanager::readSerialData()
 {
     QByteArray data = _SerialPort->readAll();
     QStringList parts = QString(data).split(',');
+
     if (parts.size() < 5) return;
     _SerialPort->write("Ok");
-    emit updateSpinBoxes(parts);
+
+    emit serialSignal(parts);
 }

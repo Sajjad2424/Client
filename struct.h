@@ -9,12 +9,13 @@ struct dataStruct {
     double h3;
     double h4;
     double h5;
-    QVector<double>dataVector;
+   //QVector<double>dataVector;
+    int progressBar;
 };
 
 inline QDataStream &operator>>(QDataStream &in, dataStruct &data)
 {
-    in >> data.h1 >> data.h2 >> data.h3 >> data.h4 >> data.h5 >> data.dataVector;
+    in >> data.h1 >> data.h2 >> data.h3 >> data.h4 >> data.h5>>data.progressBar;
     return in;
 }
 
