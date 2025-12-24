@@ -27,7 +27,6 @@ void tcpmanager::listenToServer(const QString &ip, quint16 port)
         QMessageBox::warning(_parent,"Status","Can't listen to server");
         return;
     }
-
     connect(myServer, &QTcpServer::newConnection, this, &tcpmanager::clientConnection);
     QMessageBox::information(_parent, "Status", "Server is listening");
 }

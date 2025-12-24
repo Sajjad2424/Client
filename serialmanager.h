@@ -12,7 +12,7 @@ public:
    // serialmanager();
     explicit serialmanager(QWidget *parent = nullptr);
 
-    void openPort(QSerialPort *serialPortTest,const QString &portName, const QString &baudRate);
+    void openPort(const QString &portName, const QString &baudRate);
     void readSerialData();
 
 signals:

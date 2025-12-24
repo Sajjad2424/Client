@@ -22,7 +22,6 @@
 #include "QPushButton"
 #include "QGroupBox"
 #include "QButtonGroup"
-#include <QRegularExpressionValidator>
 
 
 
@@ -36,14 +35,9 @@ MainWindow::MainWindow(QWidget *parent)
     QIntValidator *portValidator = new QIntValidator();
     portValidator->setRange(1,65535);
 
-    // QString ipRange = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])";
-    // QRegularExpression ipRegex("^" + ipRange+ "(\\." + ipRange + "){3}$");
-    // QRegularExpressionValidator *ipValidator = new QRegularExpressionValidator(ipRegex, this);
 
-    ipLineEdit = new QLineEdit("127.0.0.1",this);
-    //ipLineEdit->setValidator(ipValidator);
+    ipLineEdit = new QLineEdit("0.0.0.0");
     ipLineEdit->setInputMask("000.000.000.000");
-
     portLineEdit = new QLineEdit("8080",this);
     portLineEdit->setValidator(portValidator);
 
@@ -84,7 +78,6 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel *buadRateLabel = new QLabel("BuadRate");
     serialComboBox = new QComboBox(this);
     baudRateComboBox = new QComboBox();
-    //baudRateComboBox->addItems({"9600" ,"19200","38400","57600","115200"});
     serialWidget->setLayout(serialLayout);
 
     serialLayout->addWidget(PortNameLabel);
@@ -181,7 +174,6 @@ void MainWindow::updateSpinBox(QVector<int> values,int progress)
     mySpinBox5->setValue(values[4]);
 
     myProgress->setValue(progress);
-
 }
 
 void MainWindow::updateSpinBoxTcp(const dataStruct &data)
@@ -192,8 +184,6 @@ void MainWindow::updateSpinBoxTcp(const dataStruct &data)
     mySpinBox4->setValue(data.h4);
     mySpinBox5->setValue(data.h5);
     myProgress->setValue(data.progressBar);
-
-
 }
 
 void MainWindow::updateSpinBoxSerial(QStringList &data)
@@ -203,7 +193,6 @@ void MainWindow::updateSpinBoxSerial(QStringList &data)
     mySpinBox3->setValue(data[3].toInt());
     mySpinBox4->setValue(data[4].toInt());
     mySpinBox5->setValue(data[5].toInt());
-
 }
 
 void MainWindow::listenToServer()
@@ -233,39 +222,25 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadBaudRate()
 {
-
-    const QList<qint32> baudRates = QSerialPortInfo::standardBaudRates();
-
-
-    foreach (qint32 baud, baudRates)
+    foreach(auto baudRate , QSerialPortInfo::standardBaudRates())
     {
-        //qDebug() << baud;
-
-        baudRateComboBox->addItem(QString::number(baud));
+        baudRateComboBox->addItem(QString::number(baudRate));
     }
 }
-
 
 void MainWindow::loadProts()
 {
     foreach (auto port, QSerialPortInfo::availablePorts()) {
-        qDebug()<< port.portName();
-        qDebug()<< port.serialNumber();
+
         serialComboBox->addItem(port.portName());
     }
 }
 
-
-
 void MainWindow::openPort()
 {
-    serialClass->openPort(serialPortTest,
-                          serialComboBox->currentText(),
+    serialClass->openPort(serialComboBox->currentText(),
                           baudRateComboBox->currentText());
-
 }
-
-
 
 
 void MainWindow::chooseConnection()

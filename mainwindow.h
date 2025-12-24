@@ -33,7 +33,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void loadBaudRate();
+
+
 
 private slots:
     void openFile();
@@ -44,7 +45,9 @@ private slots:
 
     void listenToServer();
     void loadProts();
+    void loadBaudRate();
     void openPort();
+
 
     void chooseConnection();
     void checboxes();

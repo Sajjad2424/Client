@@ -5,16 +5,18 @@
 serialmanager::serialmanager(QWidget *parent): QObject(parent)
 {
     _parent= parent;
+    _SerialPort = new QSerialPort();
 }
 
 
-void serialmanager::openPort(QSerialPort *serialPortTest,const QString &portName, const QString &baudRate)
+void serialmanager::openPort(const QString &portName, const QString &baudRate)
 {
-    _SerialPort=serialPortTest;
+
+
     if (_SerialPort !=nullptr )
     {
         _SerialPort->close();
-        delete _SerialPort;
+      delete _SerialPort;
     }
 
     _SerialPort = new QSerialPort();
@@ -26,6 +28,7 @@ void serialmanager::openPort(QSerialPort *serialPortTest,const QString &portName
     {
         QMessageBox::information(_parent,"Result","Port is open");
         connect(_SerialPort ,&QSerialPort::readyRead ,this ,&serialmanager::readSerialData);
+
     }
     else
     {
@@ -34,7 +37,7 @@ void serialmanager::openPort(QSerialPort *serialPortTest,const QString &portName
 }
 
 void serialmanager::readSerialData()
-{
+{    
     QByteArray data = _SerialPort->readAll();
     QStringList parts = QString(data).split(',');
 
